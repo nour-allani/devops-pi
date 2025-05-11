@@ -3,13 +3,10 @@ kind: Ingress
 metadata:
   name: app-ingress
   namespace: default
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-    - host: skillExchange.tn
-      http:
+    - http:
         paths:
           - path: /skillExchange
             pathType: Prefix
