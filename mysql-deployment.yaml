@@ -1,0 +1,68 @@
+# 1. StorageClass pour hostPath (test local)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: manual-hostpath
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: Immediate
+---
+# 2. PersistentVolume lié à /mnt/data/mysql
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: manual-hostpath
+  hostPath:
+    path: /mnt/data/mysql
+---
+# 3. PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: manual-hostpath
+  resources:
+    requests:
+      storage: 2Gi
+---
+# 4. Deployment MySQL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          args: ["--default-authentication-plugin=mysql_native_password"]
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: rootpassword
+            - name: MYSQL_DATABASE
+              value: skill_exchange
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
