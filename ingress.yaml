@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: skillExchange.tn
+    - host: skillexchange.tn
       http:
         paths:
           - path: /skillExchange
